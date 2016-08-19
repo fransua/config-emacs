@@ -12,6 +12,42 @@
 ;; (setq elpy-rpc-backend "jedi")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Backup-file
+(setq
+   backup-by-copying t                    ; don't clobber symlinks
+   backup-directory-alist
+   '(("." . "/graves/.sos/backup"))       ; all backed up files wiil be there
+   auto-save-file-name-transforms
+   `((".*" "/graves/.sos/auto-save/" t))  ; same for auto-saved
+   delete-old-versions t                                  
+   kept-new-versions 4                    ; keep latest 4 versions
+   kept-old-versions 2                    ; keep first 2 (if younger than limit)
+   version-control t)                     ; use versioned backups
+
+
+;; remove old backup files
+(message "Checking age of backup files (keeping if less than 2 days)")
+ (let ((max-age (* 60 60 24 2))
+      (current (float-time (current-time))))
+  (dolist (file (directory-files "/graves/.sos/backup" t))
+    (when (and (backup-file-name-p file)
+               (> (- current (float-time (fifth (file-attributes file))))
+                  max-age))
+      (message "%s" file)
+      (delete-file file))))
+
+;; remove very old auto-save files
+(message "Checking age of autosave files (keeping if less than 30 days)")
+ (let ((max-age (* 60 60 24 30))
+      (current (float-time (current-time))))
+  (dolist (file (directory-files "/graves/.sos/auto-save" t))
+    (when (and (backup-file-name-p file)
+               (> (- current (float-time (fifth (file-attributes file))))
+                  max-age))
+      (message "%s" file)
+      (delete-file file))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Flymake-mode
 (add-hook 'find-file-hook 'flymake-find-file-hook)
 (when (load "flymake" t)
